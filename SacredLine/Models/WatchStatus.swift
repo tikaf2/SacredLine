@@ -12,14 +12,12 @@ enum WatchStatus: String, CaseIterable, Codable {
     case completed = "Completed"
     case incomplete = "Incomplete"
     case notStarted = "Not Started"
-    case comingSoon = "Coming Soon"
     
     var color: Color {
         switch self {
         case .completed: return .green
         case .incomplete: return .orange
         case .notStarted: return .gray
-        case .comingSoon: return Color.purple.opacity(0.8)
         case .all: return .white
         }
     }

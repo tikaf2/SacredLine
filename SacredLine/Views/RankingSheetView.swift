@@ -37,7 +37,6 @@ struct RankingSheetView: View {
                             personalReviewSection
                             dateAndToggleSection
                             
-                            // Tombol Preview & Share IG Story di bagian bawah
                             Button(action: { showSharePreview = true }) {
                                 HStack(spacing: 8) {
                                     Image(systemName: "square.and.arrow.up")
@@ -104,7 +103,6 @@ struct RankingSheetView: View {
     
     private var headerNavigationBar: some View {
         HStack {
-            // Tombol Close (X) di Kiri
             Button(action: { dismiss() }) {
                 Image(systemName: "xmark")
                     .font(.body.bold())
@@ -129,8 +127,6 @@ struct RankingSheetView: View {
             
             Spacer()
             
-            // TOMBOL SAVE (CEKLIS) DI POJOK KANAN ATAS
-            // Warnanya abu-abu kalau belum pilih tier, menyala kalau sudah dipilih.
             let isTierSelected = movie.tier != .unranked
             Button(action: saveAction) {
                 Image(systemName: "checkmark")
@@ -501,7 +497,7 @@ struct ZoomedPhotoView: View {
     }
 }
 
-// MARK: - Template Share IG Story (Lengkap dengan Penjelasan Tier & Bingkai 1:1)
+// MARK: - Template Share IG Story (Ukuran Proporsional & Foto 1:1)
 struct MovieReviewShareCard: View {
     let movie: MarvelMovie
     @Environment(\.dismiss) var dismiss
@@ -535,7 +531,7 @@ struct MovieReviewShareCard: View {
                     .padding(.top, 20)
                     
                     cardContentBody
-                        .padding(20)
+                        .padding(18)
                         .background(
                             RoundedRectangle(cornerRadius: 24)
                                 .fill(.ultraThinMaterial)
@@ -578,7 +574,7 @@ struct MovieReviewShareCard: View {
     
     @ViewBuilder
     private var cardContentBody: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("SACRED LINE REVIEW")
@@ -596,9 +592,9 @@ struct MovieReviewShareCard: View {
                 
                 if movie.tier != .unranked {
                     Text(movie.tier.rawValue)
-                        .font(.system(size: 22, weight: .black))
+                        .font(.system(size: 20, weight: .black))
                         .foregroundColor(.white)
-                        .frame(width: 44, height: 44)
+                        .frame(width: 40, height: 40)
                         .background(movie.tier.color)
                         .clipShape(Circle())
                         .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
@@ -607,23 +603,23 @@ struct MovieReviewShareCard: View {
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(movie.title)
-                    .font(.title3.bold())
+                    .font(.headline.bold())
                     .foregroundColor(.white)
                     .lineLimit(2)
                 Text(movie.duration)
-                    .font(.caption)
+                    .font(.caption2)
                     .foregroundColor(.white.opacity(0.5))
             }
             
+            // FOTO DIKUNCI 1:1 KOTAK PAS (Ukuran proporsional di IG Story, lebar dikunci 256 agar tidak terlalu raksasa)
             if let data = movie.userPhotoData, let uiImage = UIImage(data: data) {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(1, contentMode: .fit)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .frame(width: 256, height: 256)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 14)
+                        RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.white.opacity(0.2), lineWidth: 1)
                     )
                     .onTapGesture {
@@ -644,14 +640,14 @@ struct MovieReviewShareCard: View {
                     .foregroundColor(.white.opacity(0.9))
                     .lineLimit(4)
             }
-            .padding(14)
+            .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.black.opacity(0.4))
             .cornerRadius(12)
             
             HStack {
                 Text("#SacredLine #MCUReview")
-                    .font(.system(size: 9, weight: .semibold))
+                    .font(.system(size: 8.5, weight: .semibold))
                     .foregroundColor(.white.opacity(0.4))
                 Spacer()
                 Text(movie.wouldRewatch ? "🔄 Would Rewatch" : "")
@@ -693,14 +689,15 @@ struct MovieReviewShareCard: View {
         }
     }
     
+    // Lebar card IG dikecilkan jadi 304 agar ukurannya pas dan ideal (tidak terlalu besar di IG Story)
     private var cardToShare: some View {
         cardContentBody
-            .padding(24)
-            .frame(width: 350)
+            .padding(20)
+            .frame(width: 304)
             .background(Color(hex: "1F0608"))
-            .cornerRadius(24)
+            .cornerRadius(22)
             .overlay(
-                RoundedRectangle(cornerRadius: 24)
+                RoundedRectangle(cornerRadius: 22)
                     .stroke(
                         LinearGradient(
                             colors: [movie.mediaGlowColor, Color.white.opacity(0.2)],
