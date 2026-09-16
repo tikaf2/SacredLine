@@ -11,7 +11,7 @@ import SwiftUI
 struct SacredLineApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainContainerView()
         }
     }
 }
