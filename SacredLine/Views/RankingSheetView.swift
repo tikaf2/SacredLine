@@ -16,6 +16,7 @@ struct RankingSheetView: View {
     @State private var showError: Bool = false
     @State private var showSharePreview: Bool = false
     @State private var showImagePicker: Bool = false
+    @State private var zoomedImage: UIImage? = nil
     @FocusState private var isNotesFocused: Bool
     @State private var animateGlow: Bool = false
     
@@ -35,7 +36,22 @@ struct RankingSheetView: View {
                             tierPickerSection
                             personalReviewSection
                             dateAndToggleSection
-                            saveButtonSection
+                            
+                            // Tombol Preview & Share IG Story di bagian bawah
+                            Button(action: { showSharePreview = true }) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "square.and.arrow.up")
+                                    Text("Preview & Share IG Story")
+                                }
+                                .font(.headline.bold())
+                                .foregroundColor(.black)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(movie.mediaGlowColor)
+                                .cornerRadius(16)
+                                .shadow(color: movie.mediaGlowColor.opacity(0.5), radius: 10, x: 0, y: 4)
+                            }
+                            .padding(.top, 10)
                         }
                         .padding(20)
                     }
@@ -54,6 +70,12 @@ struct RankingSheetView: View {
             }
             .sheet(isPresented: $showImagePicker) {
                 ImagePickerView(sourceType: .photoLibrary, selectedImageData: $movie.userPhotoData)
+            }
+            .sheet(item: Binding(
+                get: { zoomedImage.map { IdentifiableImage(image: $0) } },
+                set: { zoomedImage = $0?.image }
+            )) { item in
+                ZoomedPhotoView(image: item.image)
             }
             .onAppear { animateGlow = true }
         }
@@ -82,6 +104,7 @@ struct RankingSheetView: View {
     
     private var headerNavigationBar: some View {
         HStack {
+            // Tombol Close (X) di Kiri
             Button(action: { dismiss() }) {
                 Image(systemName: "xmark")
                     .font(.body.bold())
@@ -106,17 +129,17 @@ struct RankingSheetView: View {
             
             Spacer()
             
-            if movie.tier != .unranked {
-                Button(action: { showSharePreview = true }) {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                        .frame(width: 36, height: 36)
-                        .background(movie.mediaGlowColor.opacity(0.3))
-                        .clipShape(Circle())
-                }
-            } else {
-                Color.clear.frame(width: 36, height: 36)
+            // TOMBOL SAVE (CEKLIS) DI POJOK KANAN ATAS
+            // Warnanya abu-abu kalau belum pilih tier, menyala kalau sudah dipilih.
+            let isTierSelected = movie.tier != .unranked
+            Button(action: saveAction) {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(isTierSelected ? .black : .white.opacity(0.4))
+                    .frame(width: 36, height: 36)
+                    .background(isTierSelected ? movie.mediaGlowColor : Color.white.opacity(0.1))
+                    .clipShape(Circle())
+                    .shadow(color: isTierSelected ? movie.mediaGlowColor.opacity(0.4) : Color.clear, radius: 6, x: 0, y: 2)
             }
         }
         .padding(.horizontal, 20)
@@ -216,6 +239,51 @@ struct RankingSheetView: View {
                 }
             }
             
+            HStack(spacing: 12) {
+                if let data = movie.userPhotoData, let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 60, height: 60)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
+                        .onTapGesture {
+                            zoomedImage = uiImage
+                        }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Photo Attached")
+                            .font(.subheadline.bold())
+                            .foregroundColor(.white)
+                        Text("Tap photo to view, or change below")
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.white.opacity(0.08))
+                            .frame(width: 60, height: 60)
+                        Image(systemName: "photo.badge.plus")
+                            .foregroundColor(.white.opacity(0.6))
+                            .font(.system(size: 20))
+                    }
+                    
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Add Watch Photo / Ticket")
+                            .font(.subheadline.bold())
+                            .foregroundColor(.white)
+                        Text("Tap button to select from gallery")
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                }
+                Spacer()
+            }
+            
             Button(action: {
                 PHPhotoLibrary.requestAuthorization { status in
                     DispatchQueue.main.async {
@@ -223,43 +291,16 @@ struct RankingSheetView: View {
                     }
                 }
             }) {
-                HStack(spacing: 12) {
-                    if let data = movie.userPhotoData, let uiImage = UIImage(data: data) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: 60, height: 60)
-                            .clipShape(RoundedRectangle(cornerRadius: 10))
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Photo Attached")
-                                .font(.subheadline.bold())
-                                .foregroundColor(.white)
-                            Text("Tap to change photo")
-                                .font(.caption2)
-                                .foregroundColor(.white.opacity(0.5))
-                        }
-                    } else {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.white.opacity(0.08))
-                                .frame(width: 60, height: 60)
-                            Image(systemName: "photo.badge.plus")
-                                .foregroundColor(.white.opacity(0.6))
-                                .font(.system(size: 20))
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Add Watch Photo / Ticket")
-                                .font(.subheadline.bold())
-                                .foregroundColor(.white)
-                            Text("Tap to select from gallery")
-                                .font(.caption2)
-                                .foregroundColor(.white.opacity(0.5))
-                        }
-                    }
-                    Spacer()
+                HStack {
+                    Image(systemName: movie.userPhotoData == nil ? "plus.circle.fill" : "arrow.triangle.2.circlepath")
+                    Text(movie.userPhotoData == nil ? "Select Photo from Gallery" : "Change Photo")
                 }
+                .font(.subheadline.bold())
+                .foregroundColor(.black)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.white)
+                .cornerRadius(12)
             }
         }
         .padding(14)
@@ -301,7 +342,7 @@ struct RankingSheetView: View {
                     ForEach(MarvelTier.allCases.filter { $0 != .unranked }) { tier in
                         let isSelected = movie.tier == tier
                         Button(action: {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
                                 movie.tier = tier
                                 showError = false
                             }
@@ -407,20 +448,6 @@ struct RankingSheetView: View {
         )
     }
     
-    private var saveButtonSection: some View {
-        Button(action: saveAction) {
-            Text("Save Mission Log")
-                .font(.headline.bold())
-                .foregroundColor(.black)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(movie.mediaGlowColor)
-                .cornerRadius(16)
-                .shadow(color: movie.mediaGlowColor.opacity(0.5), radius: 10, x: 0, y: 4)
-        }
-        .padding(.top, 10)
-    }
-    
     private func saveAction() {
         if movie.tier == .unranked {
             withAnimation { showError = true }
@@ -431,10 +458,54 @@ struct RankingSheetView: View {
     }
 }
 
-// MARK: - Template Share IG Story
+// MARK: - Helper untuk Identifiable Image Zoom
+struct IdentifiableImage: Identifiable {
+    let id = UUID()
+    let image: UIImage
+}
+
+// MARK: - Tampilan Layar Penuh (Zoom View)
+struct ZoomedPhotoView: View {
+    let image: UIImage
+    @Environment(\.dismiss) var dismiss
+    
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            
+            VStack {
+                HStack {
+                    Spacer()
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(10)
+                            .background(Color.white.opacity(0.2))
+                            .clipShape(Circle())
+                    }
+                    .padding(20)
+                }
+                
+                Spacer()
+                
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding()
+                
+                Spacer()
+            }
+        }
+    }
+}
+
+// MARK: - Template Share IG Story (Lengkap dengan Penjelasan Tier & Bingkai 1:1)
 struct MovieReviewShareCard: View {
     let movie: MarvelMovie
     @Environment(\.dismiss) var dismiss
+    @State private var zoomedImageForShare: UIImage? = nil
     
     var body: some View {
         ZStack {
@@ -463,98 +534,25 @@ struct MovieReviewShareCard: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 20)
                     
-                    VStack(alignment: .leading, spacing: 14) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("SACRED LINE REVIEW")
-                                    .font(.system(size: 8, weight: .black))
-                                    .foregroundColor(movie.mediaGlowColor)
-                                    .tracking(2)
-                                Text(movie.year)
-                                    .font(.caption.bold())
-                                    .foregroundColor(.white.opacity(0.7))
-                            }
-                            Spacer()
-                            
-                            if movie.tier != .unranked {
-                                Text(movie.tier.rawValue)
-                                    .font(.system(size: 22, weight: .black))
-                                    .foregroundColor(.white)
-                                    .frame(width: 44, height: 44)
-                                    .background(movie.tier.color)
-                                    .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
-                            }
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(movie.title)
-                                .font(.title3.bold())
-                                .foregroundColor(.white)
-                                .lineLimit(2)
-                            Text(movie.duration)
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.5))
-                        }
-                        
-                        if let data = movie.userPhotoData, let uiImage = UIImage(data: data) {
-                            Image(uiImage: uiImage)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: 180)
-                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                    cardContentBody
+                        .padding(20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 24)
+                                .fill(.ultraThinMaterial)
+                                .opacity(0.7)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 14)
-                                        .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: 24)
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [movie.mediaGlowColor, Color.white.opacity(0.1)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 1.5
+                                        )
                                 )
-                        }
-                        
-                        Divider().background(Color.white.opacity(0.2))
-                        
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("MY HOT TAKE / OPINION:")
-                                .font(.system(size: 8, weight: .bold))
-                                .foregroundColor(.white.opacity(0.4))
-                            
-                            Text(movie.notes.isEmpty ? "No personal notes logged yet." : "\"" + movie.notes + "\"")
-                                .font(.subheadline)
-                                .italic()
-                                .foregroundColor(.white.opacity(0.9))
-                                .lineLimit(4)
-                        }
-                        .padding(14)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Color.black.opacity(0.4))
-                        .cornerRadius(12)
-                        
-                        HStack {
-                            Text("#SacredLine #MCUReview")
-                                .font(.system(size: 9, weight: .semibold))
-                                .foregroundColor(.white.opacity(0.4))
-                            Spacer()
-                            Text(movie.wouldRewatch ? "🔄 Would Rewatch" : "")
-                                .font(.caption2.bold())
-                                .foregroundColor(.green)
-                        }
-                    }
-                    .padding(20)
-                    .background(
-                        RoundedRectangle(cornerRadius: 24)
-                            .fill(.ultraThinMaterial)
-                            .opacity(0.7)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 24)
-                                    .stroke(
-                                        LinearGradient(
-                                            colors: [movie.mediaGlowColor, Color.white.opacity(0.1)],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        ),
-                                        lineWidth: 1.5
-                                    )
-                            )
-                    )
-                    .padding(.horizontal, 24)
+                        )
+                        .padding(.horizontal, 24)
                     
                     Button(action: shareToInstagramStory) {
                         Text("Share to Instagram Story")
@@ -570,6 +568,97 @@ struct MovieReviewShareCard: View {
                 }
             }
         }
+        .sheet(item: Binding(
+            get: { zoomedImageForShare.map { IdentifiableImage(image: $0) } },
+            set: { zoomedImageForShare = $0?.image }
+        )) { item in
+            ZoomedPhotoView(image: item.image)
+        }
+    }
+    
+    @ViewBuilder
+    private var cardContentBody: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("SACRED LINE REVIEW")
+                        .font(.system(size: 8, weight: .black))
+                        .foregroundColor(movie.mediaGlowColor)
+                        .tracking(2)
+                    
+                    if movie.tier != .unranked {
+                        Text("Tier " + movie.tier.rawValue + " • " + movie.tier.title)
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(movie.tier.color)
+                    }
+                }
+                Spacer()
+                
+                if movie.tier != .unranked {
+                    Text(movie.tier.rawValue)
+                        .font(.system(size: 22, weight: .black))
+                        .foregroundColor(.white)
+                        .frame(width: 44, height: 44)
+                        .background(movie.tier.color)
+                        .clipShape(Circle())
+                        .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
+                }
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(movie.title)
+                    .font(.title3.bold())
+                    .foregroundColor(.white)
+                    .lineLimit(2)
+                Text(movie.duration)
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.5))
+            }
+            
+            if let data = movie.userPhotoData, let uiImage = UIImage(data: data) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .aspectRatio(1, contentMode: .fit)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                    )
+                    .onTapGesture {
+                        zoomedImageForShare = uiImage
+                    }
+            }
+            
+            Divider().background(Color.white.opacity(0.2))
+            
+            VStack(alignment: .leading, spacing: 6) {
+                Text("MY HOT TAKE / OPINION:")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundColor(.white.opacity(0.4))
+                
+                Text(movie.notes.isEmpty ? "No personal notes logged yet." : "\"" + movie.notes + "\"")
+                    .font(.subheadline)
+                    .italic()
+                    .foregroundColor(.white.opacity(0.9))
+                    .lineLimit(4)
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.black.opacity(0.4))
+            .cornerRadius(12)
+            
+            HStack {
+                Text("#SacredLine #MCUReview")
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.4))
+                Spacer()
+                Text(movie.wouldRewatch ? "🔄 Would Rewatch" : "")
+                    .font(.caption2.bold())
+                    .foregroundColor(.green)
+            }
+        }
     }
     
     private func shareToInstagramStory() {
@@ -578,7 +667,6 @@ struct MovieReviewShareCard: View {
         
         guard let uiImage = renderer.uiImage, let imageData = uiImage.pngData() else { return }
         
-        // Tautan interaktif di pojok kiri atas IG Story (ganti dengan link tujuan kamu)
         let destinationURL = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID")!
         
         let pasteboardItems: [String: Any] = [
@@ -606,33 +694,21 @@ struct MovieReviewShareCard: View {
     }
     
     private var cardToShare: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("SACRED LINE REVIEW")
-                .font(.system(size: 10, weight: .black))
-                .foregroundColor(movie.mediaGlowColor)
-            Text(movie.title)
-                .font(.title2.bold())
-                .foregroundColor(.white)
-            
-            if let data = movie.userPhotoData, let uiImage = UIImage(data: data) {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 200)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            
-            Text("Tier: " + (movie.tier == .unranked ? "Unranked" : movie.tier.rawValue))
-                .font(.headline)
-                .foregroundColor(.yellow)
-            Text(movie.notes.isEmpty ? "" : "\"" + movie.notes + "\"")
-                .font(.subheadline)
-                .italic()
-                .foregroundColor(.white.opacity(0.8))
-        }
-        .padding(24)
-        .frame(width: 350)
-        .background(Color(hex: "1F0608"))
-        .cornerRadius(24)
+        cardContentBody
+            .padding(24)
+            .frame(width: 350)
+            .background(Color(hex: "1F0608"))
+            .cornerRadius(24)
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(
+                        LinearGradient(
+                            colors: [movie.mediaGlowColor, Color.white.opacity(0.2)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 2
+                    )
+            )
     }
 }

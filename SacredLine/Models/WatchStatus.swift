@@ -103,14 +103,14 @@ struct MarvelMovie: Identifiable, Codable {
         let text = duration.lowercased()
         let titleLower = title.lowercased()
         
-        if text.contains("series") || titleLower.contains("season") {
-            return Color(hex: "00E5FF")
-        } else if text.contains("mini") {
-            return Color(hex: "AA00FF")
+        if text.contains("mini") {
+            return Color(hex: "FF007F") // Pink Neon khusus Miniseries
+        } else if text.contains("series") || titleLower.contains("season") {
+            return Color(hex: "00E5FF") // Cyan Neon untuk Series biasa
         } else if (text.contains("m") && !text.contains("h")) || text.contains("short") || titleLower.contains("one-shot") {
-            return Color(hex: "FFEA00")
+            return Color(hex: "FFEA00") // Kuning untuk Short
         } else {
-            return Color(hex: "FF3D00")
+            return Color(hex: "FF3D00") // Merah untuk Movie
         }
     }
 }

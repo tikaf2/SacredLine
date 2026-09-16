@@ -7,18 +7,79 @@
 
 import SwiftUI
 
+// Enum untuk Filter Jenis Tayangan yang Mutlak (Tidak Tumpang Tindih)
+enum MediaTypeFilter: String, CaseIterable {
+    case all = "All Types"
+    case movie = "Movie"
+    case series = "Series"
+    case miniseries = "Miniseries"
+    case short = "Short"
+    
+    var icon: String {
+        switch self {
+        case .all: return "square.grid.2x2.fill"
+        case .movie: return "film.fill"
+        case .series: return "tv.fill"
+        case .miniseries: return "square.stack.3d.down.right.fill"
+        case .short: return "bolt.fill"
+        }
+    }
+}
+
+// Helper untuk mendeteksi kategori secara mutlak agar tidak double
+func getMediaTypeCategory(for movie: MarvelMovie) -> MediaTypeFilter {
+    let text = movie.duration.lowercased()
+    let titleLower = movie.title.lowercased()
+    
+    if text.contains("mini") {
+        return .miniseries
+    } else if text.contains("series") || titleLower.contains("season") {
+        return .series
+    } else if (text.contains("m") && !text.contains("h")) || text.contains("short") || titleLower.contains("one-shot") {
+        return .short
+    } else {
+        return .movie
+    }
+}
+
 struct TimelineView: View {
     var viewModel: MovieViewModel
     @State private var selectedStatusFilter: WatchStatus = .all
+    @State private var selectedMediaTypeFilter: MediaTypeFilter = .all
     @State private var searchText: String = ""
     @State private var isAscending: Bool = true
     @State private var selectedMovie: MarvelMovie? = nil
     @State private var animateMagicalGlow: Bool = false
     @State private var scrollOffset: CGFloat = 0
     
-    var displayedMovies: [MarvelMovie] {
-        let filteredByStatus = (selectedStatusFilter == .all) ? viewModel.movies : viewModel.movies.filter { $0.status == selectedStatusFilter }
-        let filteredBySearch = searchText.isEmpty ? filteredByStatus : filteredByStatus.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+    // Menyimpan indeks asli tiap film berdasarkan data awal viewModel.movies
+    var moviesWithOriginalIndex: [(originalIndex: Int, movie: MarvelMovie)] {
+        Array(viewModel.movies.enumerated()).map { ($0.offset, $0.element) }
+    }
+    
+    var displayedMovies: [(originalIndex: Int, movie: MarvelMovie)] {
+        // 1. Filter berdasarkan Status
+        let filteredByStatus = moviesWithOriginalIndex.filter { item in
+            selectedStatusFilter == .all || item.movie.status == selectedStatusFilter
+        }
+        
+        // 2. Filter berdasarkan Jenis Media secara Mutlak (Tanpa Double)
+        let filteredByType = filteredByStatus.filter { item in
+            let category = getMediaTypeCategory(for: item.movie)
+            switch selectedMediaTypeFilter {
+            case .all: return true
+            case .movie: return category == .movie
+            case .series: return category == .series
+            case .miniseries: return category == .miniseries
+            case .short: return category == .short
+            }
+        }
+        
+        // 3. Filter berdasarkan Search Text
+        let filteredBySearch = searchText.isEmpty ? filteredByType : filteredByType.filter { item in
+            item.movie.title.localizedCaseInsensitiveContains(searchText)
+        }
+        
         return isAscending ? filteredBySearch : filteredBySearch.reversed()
     }
     
@@ -54,6 +115,7 @@ struct TimelineView: View {
                 }
                 .padding(.bottom, 90)
             }
+            .scrollDismissesKeyboard(.immediately)
             .coordinateSpace(name: "scroll")
             .onPreferenceChange(ScrollOffsetKey.self) { value in
                 scrollOffset = value
@@ -126,12 +188,11 @@ struct TimelineView: View {
     }
     
     private var controlsBarSection: some View {
-        HStack(spacing: 12) {
-            // Dropdown Menu Status di Sebelah Kiri
+        HStack(spacing: 8) {
             Menu {
                 ForEach(WatchStatus.allCases, id: \.self) { status in
                     Button(action: {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        withAnimation(.easeInOut(duration: 0.3)) {
                             selectedStatusFilter = status
                         }
                     }) {
@@ -144,14 +205,45 @@ struct TimelineView: View {
                     }
                 }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: 5) {
                     Image(systemName: "line.3.horizontal.decrease.circle")
-                    Text(selectedStatusFilter == .all ? "Status: All" : selectedStatusFilter.rawValue)
+                    Text(selectedStatusFilter == .all ? "Status" : selectedStatusFilter.rawValue)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 9, weight: .bold))
+                        .font(.system(size: 8, weight: .bold))
                 }
-                .font(.system(size: 11, weight: .bold))
-                .padding(.horizontal, 14)
+                .font(.system(size: 10.5, weight: .bold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .background(Color.white.opacity(0.1))
+                .foregroundColor(.white)
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(Color.white.opacity(0.2), lineWidth: 1))
+            }
+            
+            Menu {
+                ForEach(MediaTypeFilter.allCases, id: \.self) { mediaType in
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            selectedMediaTypeFilter = mediaType
+                        }
+                    }) {
+                        HStack {
+                            Text(mediaType.rawValue)
+                            if selectedMediaTypeFilter == mediaType {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 5) {
+                    Image(systemName: selectedMediaTypeFilter.icon)
+                    Text(selectedMediaTypeFilter == .all ? "Type" : selectedMediaTypeFilter.rawValue)
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 8, weight: .bold))
+                }
+                .font(.system(size: 10.5, weight: .bold))
+                .padding(.horizontal, 10)
                 .padding(.vertical, 7)
                 .background(Color.white.opacity(0.1))
                 .foregroundColor(.white)
@@ -161,19 +253,18 @@ struct TimelineView: View {
             
             Spacer()
             
-            // Tombol Toggle Ascending / Descending di Sebelah Kanan
             Button(action: {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                withAnimation(.easeInOut(duration: 0.3)) {
                     isAscending.toggle()
                 }
             }) {
-                HStack(spacing: 5) {
+                HStack(spacing: 4) {
                     Image(systemName: isAscending ? "arrow.up" : "arrow.down")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 9, weight: .bold))
                     Text(isAscending ? "Asc" : "Desc")
                 }
-                .font(.system(size: 11, weight: .bold))
-                .padding(.horizontal, 12)
+                .font(.system(size: 10.5, weight: .bold))
+                .padding(.horizontal, 10)
                 .padding(.vertical, 7)
                 .background(Color.red.opacity(0.75))
                 .foregroundColor(.white)
@@ -198,10 +289,11 @@ struct TimelineView: View {
                 }
                 .padding(.top, 40)
             } else {
-                ForEach(Array(displayedMovies.enumerated()), id: \.element.id) { index, movie in
-                    MagicalBoardingPassCard(index: index, movie: movie) {
+                // Menggunakan originalIndex agar nomor MCU (MCU-1, dst.) TETAP STABIL meskipun difilter
+                ForEach(displayedMovies, id: \.movie.id) { item in
+                    MagicalBoardingPassCard(index: item.originalIndex, movie: item.movie) {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
-                            selectedMovie = movie
+                            selectedMovie = item.movie
                         }
                     }
                 }
@@ -215,8 +307,8 @@ struct TimelineView: View {
         Rectangle()
             .fill(.ultraThinMaterial)
             .opacity(scrollOffset < -15 ? 0.95 : 0)
-            .frame(height: 100)
-            .ignoresSafeArea()
+            .frame(height: 130)
+            .ignoresSafeArea(edges: .top)
             .overlay(
                 Rectangle()
                     .frame(height: scrollOffset < -15 ? 0.5 : 0)
@@ -245,13 +337,12 @@ struct MagicalBoardingPassCard: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 0) {
-                // Sisi Kiri (MISSION Stub dengan warna mediaGlowColor)
                 VStack(alignment: .leading, spacing: 3) {
                     Text("MISSION")
                         .font(.system(size: 7, weight: .black))
                         .foregroundColor(movie.mediaGlowColor)
                     
-                    Text("MCU-" + String(index + 1))
+                    Text("MCU-\(index + 1)")
                         .font(.system(size: 13, weight: .black, design: .rounded))
                         .foregroundColor(.white)
                     
@@ -275,18 +366,18 @@ struct MagicalBoardingPassCard: View {
                     UnevenRoundedRectangle(topLeadingRadius: 18, bottomLeadingRadius: 18, bottomTrailingRadius: 0, topTrailingRadius: 0)
                 )
                 
-                // Garis Perforasi Tiket
                 ZStack {
                     Color.black.opacity(0.4)
                     VStack(spacing: 5) {
                         ForEach(0..<8, id: \.self) { _ in
-                            Rectangle().fill(Color.white.opacity(0.25)).frame(width: 1.5, height: 5)
+                            Rectangle()
+                                .fill(Color.white.opacity(0.25))
+                                .frame(width: 1.5, height: 5)
                         }
                     }
                 }
                 .frame(width: 12)
                 
-                // Sisi Kanan (Detail Utama Film)
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Text("TIMELINE PASS")
@@ -313,7 +404,6 @@ struct MagicalBoardingPassCard: View {
                             .font(.caption2)
                             .foregroundColor(.white.opacity(0.6))
                         Spacer()
-                        // Barcode Tiket Asli
                         HStack(spacing: 1.5) {
                             ForEach(0..<10, id: \.self) { barIndex in
                                 Rectangle()
@@ -353,4 +443,3 @@ struct MagicalBoardingPassCard: View {
         }, perform: {})
     }
 }
-

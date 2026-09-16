@@ -39,7 +39,7 @@ class MovieViewModel {
                 MarvelMovie(title: "Eyes of Wakanda (Ep. 4)", year: "1896", duration: "30m", description: "Late 19th-century operations involving Wakandan secret protectors."),
                 MarvelMovie(title: "Captain America: The First Avenger", year: "1943", duration: "2h 4m", description: "Steve Rogers transforms into Super-Soldier Captain America to take down Hydra during World War II."),
                 MarvelMovie(title: "Agent Carter (Season 1)", year: "1946", duration: "Series", description: "Peggy Carter navigates secretarial duties in the SSR while secretly helping Howard Stark clear his name."),
-                MarvelMovie(title: "The Fantastic Four: First Steps", year: "1964", duration: "1h 55m", description: "The Fantastic Four balance family bonds while defending Earth from Galactus and the Silver Surfer.", statusOverride: .comingSoon),
+                MarvelMovie(title: "The Fantastic Four: First Steps", year: "1964", duration: "1h 55m", description: "The Fantastic Four balance family bonds while defending Earth from Galactus and the Silver Surfer."),
                 MarvelMovie(title: "Captain Marvel", year: "1995", duration: "2h 3m", description: "Carol Danvers becomes a powerful hero when Earth is caught in a galactic war between two alien races."),
                 MarvelMovie(title: "Iron Man", year: "2010", duration: "2h 6m", description: "Billionaire engineer Tony Stark creates a unique weaponized suit of armor to fight evil after captivity."),
                 MarvelMovie(title: "Iron Man 2", year: "2011", duration: "2h 4m", description: "Tony Stark contends with declining health and a vengeful madman with ties to his father's legacy."),
@@ -107,12 +107,12 @@ class MovieViewModel {
                 MarvelMovie(title: "The Marvels", year: "2026", duration: "1h 45m", description: "Carol, Kamala, and Monica swap places whenever they use their light powers."),
                 MarvelMovie(title: "Agatha All Along", year: "2026", duration: "Series", description: "Agatha Harkness forms a coven to walk the perilous Witches' Road."),
                 MarvelMovie(title: "Daredevil: Born Again (Season 1 - Ep. 1)", year: "2026", duration: "Series", description: "Matt Murdock and Wilson Fisk collide once more in New York politics."),
-                MarvelMovie(title: "Daredevil: Born Again (Season 1 - Ep. 2–9)", year: "2027", duration: "Series", description: "The explosive continuation of Matt and Fisk's epic clash.", statusOverride: .comingSoon),
-                MarvelMovie(title: "Captain America: Brave New World", year: "2027", duration: "1h 58m", description: "Sam Wilson faces an international global conspiracy as the new Captain America.", statusOverride: .comingSoon),
-                MarvelMovie(title: "Thunderbolts*", year: "2027", duration: "2h 15m", description: "An unorthodox crew of antiheroes embark on a lethal black-ops mission.", statusOverride: .comingSoon),
-                MarvelMovie(title: "Daredevil: Born Again (Season 2)", year: "2027", duration: "Series", description: "Further chapters of the Hell's Kitchen vigilante.", statusOverride: .comingSoon),
-                MarvelMovie(title: "The Punisher: One Last Kill", year: "2027", duration: "Special", description: "Frank Castle confronts what remains of his brutal purpose.", statusOverride: .comingSoon),
-                MarvelMovie(title: "Spider-Man: Brand New Day", year: "2028", duration: "2h 25m", description: "A forgotten Peter Parker navigates solo heroics under mounting pressure.", statusOverride: .comingSoon)
+                MarvelMovie(title: "Daredevil: Born Again (Season 1 - Ep. 2–9)", year: "2027", duration: "Series", description: "The explosive continuation of Matt and Fisk's epic clash."),
+                MarvelMovie(title: "Captain America: Brave New World", year: "2027", duration: "1h 58m", description: "Sam Wilson faces an international global conspiracy as the new Captain America."),
+                MarvelMovie(title: "Thunderbolts*", year: "2027", duration: "2h 15m", description: "An unorthodox crew of antiheroes embark on a lethal black-ops mission."),
+                MarvelMovie(title: "Daredevil: Born Again (Season 2)", year: "2027", duration: "Series", description: "Further chapters of the Hell's Kitchen vigilante."),
+                MarvelMovie(title: "The Punisher: One Last Kill", year: "2027", duration: "Special", description: "Frank Castle confronts what remains of his brutal purpose."),
+                MarvelMovie(title: "Spider-Man: Brand New Day", year: "2028", duration: "2h 25m", description: "A forgotten Peter Parker navigates solo heroics under mounting pressure.")
             ]
         }
     }
