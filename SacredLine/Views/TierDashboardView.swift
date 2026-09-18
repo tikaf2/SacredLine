@@ -111,10 +111,11 @@ struct TierDashboardView: View {
     private var tierRowsSection: some View {
         VStack(spacing: 14) {
             ForEach(tiers) { tier in
-                let rankedMovies = viewModel.movies.filter { $0.tier == tier }
+                // Mengambil film di tier ini dan dibalik (.reversed()) agar yang terbaru/terakhir ditambahkan muncul di paling kiri/depan
+                let rankedMovies = Array(viewModel.movies.filter { $0.tier == tier }.reversed())
                 
                 HStack(spacing: 0) {
-                    // Kotak Badge Huruf Tier di Kiri (Bisa ditap juga buat buka list lengkap)
+                    // Kotak Badge Huruf Tier di Kiri
                     Button(action: {
                         selectedTierForSheet = tier
                     }) {
@@ -133,7 +134,7 @@ struct TierDashboardView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     
-                    // Area Tengah: Bisa Slide Horizontal (Film-film di tier ini)
+                    // Area Tengah: Slide Horizontal (Film-film di tier ini, urutan terbaru di depan)
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             if rankedMovies.isEmpty {
@@ -277,7 +278,7 @@ struct TierDashboardView: View {
     }
 }
 
-// MARK: - Sheet Detail List Film per Tier
+// MARK: - Sheet Detail List Film per Tier (Urutan Terbaru di Atas)
 struct TierDetailSheetView: View {
     let tier: MarvelTier
     var viewModel: MovieViewModel
@@ -311,7 +312,8 @@ struct TierDetailSheetView: View {
                     .padding(20)
                     
                     ScrollView(showsIndicators: false) {
-                        let moviesInTier = viewModel.movies.filter { $0.tier == tier }
+                        // Menggunakan .reversed() agar film yang baru di-rank muncul di paling atas list
+                        let moviesInTier = Array(viewModel.movies.filter { $0.tier == tier }.reversed())
                         
                         if moviesInTier.isEmpty {
                             VStack(spacing: 12) {

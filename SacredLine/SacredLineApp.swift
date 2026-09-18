@@ -9,9 +9,18 @@ import SwiftUI
 
 @main
 struct SacredLineApp: App {
+    // Menyimpan status onboarding di UserDefaults
+    @AppStorage("isOnboardingCompleted") var isOnboardingCompleted: Bool = false
+    
     var body: some Scene {
         WindowGroup {
-            MainContainerView()
+            Group {
+                if isOnboardingCompleted {
+                    MainContainerView()
+                } else {
+                    OnboardingView(isOnboardingCompleted: $isOnboardingCompleted)
+                }
+            }
         }
     }
 }
