@@ -185,6 +185,7 @@ struct ShareStoryView: View {
             .padding(.top, 4)
         }
         .padding(20)
+        .frame(width: 325) // Fixed width container preview for clean scaling
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(.ultraThinMaterial)

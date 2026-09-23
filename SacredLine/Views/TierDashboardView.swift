@@ -13,20 +13,53 @@ struct TierDashboardView: View {
     let tiers: [MarvelTier] = [.s, .a, .b, .c, .d]
     @State private var selectedMovie: MarvelMovie? = nil
     @State private var selectedTierForSheet: MarvelTier? = nil // Untuk sheet list lengkap
-    @State private var animateGlow: Bool = false
+    
+    // Animasi Galaxy Merah & Cosmic Background
+    @State private var animateMagicalGlow: Bool = false
+    @State private var animateParticles: Bool = false
     @State private var showSharePassport: Bool = false
     
     var body: some View {
-        ZStack {
-            backgroundGradientView
-            glowingPortalCircle
+        ZStack(alignment: .top) {
+            // 1. Latar Belakang Cosmic Red Space (Dark Pitch Black + Crimson Tint)
+            LinearGradient(
+                gradient: Gradient(colors: [Color(hex: "080203"), Color(hex: "1A0508"), Color(hex: "040101")]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            // 2. Partikel Galaxy Merah/Amber
+            ForEach(0..<30, id: \.self) { index in
+                GalaxyParticleView(index: index, animate: animateParticles)
+            }
+            .ignoresSafeArea()
+            
+            // 3. Nebula Glow Effect 1 (Crimson Red)
+            Circle()
+                .fill(Color(hex: "E63946").opacity(0.18))
+                .frame(width: 380, height: 380)
+                .blur(radius: 80)
+                .offset(x: animateMagicalGlow ? 120 : -120, y: animateMagicalGlow ? -200 : 200)
+                .animation(.easeInOut(duration: 7).repeatForever(autoreverses: true), value: animateMagicalGlow)
+                .ignoresSafeArea()
+            
+            // 4. Nebula Glow Effect 2 (Blood Orange / Flame)
+            Circle()
+                .fill(Color(hex: "D90429").opacity(0.12))
+                .frame(width: 300, height: 300)
+                .blur(radius: 90)
+                .offset(x: animateMagicalGlow ? -150 : 150, y: animateMagicalGlow ? 300 : -100)
+                .animation(.easeInOut(duration: 5).repeatForever(autoreverses: true), value: animateMagicalGlow)
+                .ignoresSafeArea()
             
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 22) {
+                VStack(spacing: 24) {
                     headerTitleSection
                     tierRowsSection
                     distributionMatrixSection
                 }
+                .padding(.horizontal, 20)
                 .padding(.bottom, 120)
             }
         }
@@ -52,66 +85,58 @@ struct TierDashboardView: View {
                 .presentationDetents([.medium, .large])
                 .presentationBackground(.black.opacity(0.85))
         }
-        .onAppear { animateGlow = true }
+        .onAppear {
+            animateMagicalGlow = true
+            animateParticles = true
+        }
     }
     
-    // MARK: - Subcomponents
-    
-    private var backgroundGradientView: some View {
-        LinearGradient(
-            gradient: Gradient(colors: [Color(hex: "140304"), Color(hex: "0A0102"), Color(hex: "050000")]),
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
-    }
-    
-    private var glowingPortalCircle: some View {
-        Circle()
-            .fill(Color(hex: "AE0F1C").opacity(0.2))
-            .frame(width: 400, height: 400)
-            .blur(radius: 90)
-            .offset(x: animateGlow ? 100 : -100, y: animateGlow ? -200 : 200)
-            .animation(.easeInOut(duration: 8).repeatForever(autoreverses: true), value: animateGlow)
-            .ignoresSafeArea()
-    }
+    // MARK: - Subcomponents Kosmik
     
     private var headerTitleSection: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             Text("TIER RANKINGS")
-                .font(.custom("Georgia", size: 32, relativeTo: .title))
-                .bold()
+                .font(.system(size: 30, weight: .bold, design: .serif))
                 .foregroundColor(.white)
-                .tracking(4)
+                .tracking(3)
             
-            Text("Multiverse Classifications Ledger")
-                .font(.system(size: 11, weight: .semibold))
+            Text("Watcher's Sacred Classification")
+                .font(.system(size: 11, weight: .medium))
                 .foregroundColor(.white.opacity(0.5))
                 .tracking(2)
-                .textCase(.uppercase)
             
             Button(action: { showSharePassport = true }) {
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
                     Image(systemName: "square.and.arrow.up")
+                        .font(.system(size: 12, weight: .bold))
                     Text("Share Tier Passport")
+                        .font(.caption.bold())
                 }
-                .font(.caption.bold())
                 .foregroundColor(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 10)
                 .background(.ultraThinMaterial)
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke(Color.white.opacity(0.3), lineWidth: 1))
+                .overlay(
+                    Capsule().stroke(
+                        LinearGradient(
+                            colors: [Color(hex: "AE0F1C").opacity(0.8), Color.white.opacity(0.2)],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        ),
+                        lineWidth: 1.2
+                    )
+                )
+                .shadow(color: Color(hex: "AE0F1C").opacity(0.2), radius: 8, x: 0, y: 3)
             }
-            .padding(.top, 2)
+            .padding(.top, 4)
         }
-        .padding(.top, 16)
+        .padding(.top, 20)
     }
     
     private var tierRowsSection: some View {
         VStack(spacing: 14) {
             ForEach(tiers) { tier in
-                // Mengambil film di tier ini dan dibalik (.reversed()) agar yang terbaru/terakhir ditambahkan muncul di paling kiri/depan
                 let rankedMovies = Array(viewModel.movies.filter { $0.tier == tier }.reversed())
                 
                 HStack(spacing: 0) {
@@ -134,7 +159,7 @@ struct TierDashboardView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                     
-                    // Area Tengah: Slide Horizontal (Film-film di tier ini, urutan terbaru di depan)
+                    // Area Tengah: Slide Horizontal Film per Tier
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             if rankedMovies.isEmpty {
@@ -203,7 +228,7 @@ struct TierDashboardView: View {
                         .padding(.horizontal, 12)
                     }
                     
-                    // Tombol Chevron di Sebelah Kanan untuk buka Sheet Lengkap
+                    // Tombol Chevron Kanan untuk Membuka Sheet List Lengkap
                     Button(action: {
                         selectedTierForSheet = tier
                     }) {
@@ -217,7 +242,7 @@ struct TierDashboardView: View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(Color.black.opacity(0.4))
+                        .fill(Color.black.opacity(0.45))
                         .overlay(
                             RoundedRectangle(cornerRadius: 14)
                                 .stroke(tier.color.opacity(0.5), lineWidth: 1.2)
@@ -227,7 +252,6 @@ struct TierDashboardView: View {
                 .shadow(color: tier.color.opacity(0.15), radius: 8, x: 0, y: 4)
             }
         }
-        .padding(.horizontal, 20)
     }
     
     private var distributionMatrixSection: some View {
@@ -274,11 +298,10 @@ struct TierDashboardView: View {
                         .stroke(Color.white.opacity(0.15), lineWidth: 1)
                 )
         )
-        .padding(.horizontal, 20)
     }
 }
 
-// MARK: - Sheet Detail List Film per Tier (Urutan Terbaru di Atas)
+// MARK: - Sheet Detail List Film per Tier
 struct TierDetailSheetView: View {
     let tier: MarvelTier
     var viewModel: MovieViewModel
@@ -312,7 +335,6 @@ struct TierDetailSheetView: View {
                     .padding(20)
                     
                     ScrollView(showsIndicators: false) {
-                        // Menggunakan .reversed() agar film yang baru di-rank muncul di paling atas list
                         let moviesInTier = Array(viewModel.movies.filter { $0.tier == tier }.reversed())
                         
                         if moviesInTier.isEmpty {
@@ -380,5 +402,12 @@ struct TierDetailSheetView: View {
                 }
             }
         }
+    }
+}
+
+#Preview {
+    ZStack {
+        Color.black.ignoresSafeArea()
+        TierDashboardView(viewModel: MovieViewModel())
     }
 }

@@ -23,8 +23,9 @@ struct RankingSheetView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                backgroundGradientView
-                glowingBackgroundCircle
+                backgroundGalaxyGradient
+                StarryBackgroundView()
+                glowingGalaxyNebula
                 
                 VStack(spacing: 0) {
                     headerNavigationBar
@@ -39,16 +40,16 @@ struct RankingSheetView: View {
                             
                             Button(action: { showSharePreview = true }) {
                                 HStack(spacing: 8) {
-                                    Image(systemName: "square.and.arrow.up")
+                                    Image(systemName: "sparkles")
                                     Text("Preview & Share IG Story")
                                 }
                                 .font(.headline.bold())
                                 .foregroundColor(.black)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 16)
-                                .background(movie.mediaGlowColor)
+                                .background(LinearGradient(colors: [movie.mediaGlowColor, Color.cyan.opacity(0.8)], startPoint: .leading, endPoint: .trailing))
                                 .cornerRadius(16)
-                                .shadow(color: movie.mediaGlowColor.opacity(0.5), radius: 10, x: 0, y: 4)
+                                .shadow(color: movie.mediaGlowColor.opacity(0.5), radius: 12, x: 0, y: 4)
                             }
                             .padding(.top, 10)
                         }
@@ -80,26 +81,39 @@ struct RankingSheetView: View {
         }
     }
     
-    // MARK: - Subcomponents
+    // MARK: - Galaxy Background Elements
     
-    private var backgroundGradientView: some View {
+    private var backgroundGalaxyGradient: some View {
         LinearGradient(
-            gradient: Gradient(colors: [Color(hex: "1F0608"), Color(hex: "0A0102")]),
-            startPoint: .top,
-            endPoint: .bottom
+            gradient: Gradient(colors: [Color(hex: "0B0B16"), Color(hex: "06060B"), Color(hex: "020205")]),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
         )
         .ignoresSafeArea()
     }
     
-    private var glowingBackgroundCircle: some View {
-        Circle()
-            .fill(movie.mediaGlowColor.opacity(0.15))
-            .frame(width: 300, height: 300)
-            .blur(radius: 60)
-            .offset(x: animateGlow ? 100 : -100, y: animateGlow ? -150 : 150)
-            .animation(.easeInOut(duration: 6).repeatForever(autoreverses: true), value: animateGlow)
-            .ignoresSafeArea()
+    private var glowingGalaxyNebula: some View {
+        ZStack {
+            // Purple Nebula Orb
+            Circle()
+                .fill(Color.purple.opacity(0.2))
+                .frame(width: 350, height: 350)
+                .blur(radius: 80)
+                .offset(x: animateGlow ? 120 : -120, y: animateGlow ? -200 : 200)
+                .animation(.easeInOut(duration: 8).repeatForever(autoreverses: true), value: animateGlow)
+            
+            // Cyan Star-dust Glow
+            Circle()
+                .fill(Color.cyan.opacity(0.15))
+                .frame(width: 300, height: 300)
+                .blur(radius: 70)
+                .offset(x: animateGlow ? -100 : 130, y: animateGlow ? 180 : -150)
+                .animation(.easeInOut(duration: 7).repeatForever(autoreverses: true), value: animateGlow)
+        }
+        .ignoresSafeArea()
     }
+    
+    // MARK: - Subcomponents
     
     private var headerNavigationBar: some View {
         HStack {
@@ -115,9 +129,9 @@ struct RankingSheetView: View {
             Spacer()
             
             VStack(spacing: 2) {
-                Text("MISSION LOG")
+                Text("COSMIC LOG")
                     .font(.system(size: 8, weight: .black))
-                    .foregroundColor(movie.mediaGlowColor)
+                    .foregroundColor(.cyan)
                     .tracking(2)
                 Text(movie.title)
                     .font(.caption.bold())
@@ -150,14 +164,14 @@ struct RankingSheetView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(
                             LinearGradient(
-                                colors: [movie.mediaGlowColor.opacity(0.5), Color.black],
+                                colors: [Color.purple.opacity(0.4), Color.black],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
                         )
                     VStack(spacing: 2) {
-                        Image(systemName: "film.fill")
-                            .foregroundColor(movie.mediaGlowColor)
+                        Image(systemName: "sparkle")
+                            .foregroundColor(.cyan)
                             .font(.system(size: 20))
                         Text(movie.year)
                             .font(.system(size: 9, weight: .black))
@@ -167,7 +181,7 @@ struct RankingSheetView: View {
                 .frame(width: 65, height: 85)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(movie.mediaGlowColor.opacity(0.8), lineWidth: 1.5)
+                        .stroke(Color.cyan.opacity(0.6), lineWidth: 1.5)
                 )
                 
                 VStack(alignment: .leading, spacing: 6) {
@@ -190,9 +204,9 @@ struct RankingSheetView: View {
             Divider().background(Color.white.opacity(0.15))
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("OFFICIAL SYNOPSIS")
+                Text("STORYLINE")
                     .font(.system(size: 8, weight: .black))
-                    .foregroundColor(movie.mediaGlowColor)
+                    .foregroundColor(.cyan)
                     .tracking(1)
                 Text(movie.description)
                     .font(.caption)
@@ -204,12 +218,12 @@ struct RankingSheetView: View {
         .background(
             RoundedRectangle(cornerRadius: 20)
                 .fill(.ultraThinMaterial)
-                .opacity(0.7)
+                .opacity(0.6)
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(
                             LinearGradient(
-                                colors: [movie.mediaGlowColor.opacity(0.6), Color.white.opacity(0.05)],
+                                colors: [Color.purple.opacity(0.5), Color.cyan.opacity(0.2)],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             ),
@@ -222,7 +236,7 @@ struct RankingSheetView: View {
     private var photoMomentSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Marathon Photo Moment")
+                Text("Starlight Memory Photo")
                     .font(.headline)
                     .foregroundColor(.white)
                 Spacer()
@@ -244,7 +258,7 @@ struct RankingSheetView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
-                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                .stroke(Color.cyan.opacity(0.4), lineWidth: 1)
                         )
                         .onTapGesture {
                             zoomedImage = uiImage
@@ -264,7 +278,7 @@ struct RankingSheetView: View {
                             .fill(Color.white.opacity(0.08))
                             .frame(width: 60, height: 60)
                         Image(systemName: "photo.badge.plus")
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(.cyan.opacity(0.8))
                             .font(.system(size: 20))
                     }
                     
@@ -314,7 +328,7 @@ struct RankingSheetView: View {
     private var tierPickerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 4) {
-                Text("Personal Ranking")
+                Text("Galaxy Ranking Tier")
                     .font(.headline)
                     .foregroundColor(.white)
                 Text("*")
@@ -355,7 +369,7 @@ struct RankingSheetView: View {
                                         .foregroundColor(.white)
                                 }
                                 .overlay(
-                                    Circle().stroke(isSelected ? Color.white : Color.white.opacity(0.15), lineWidth: isSelected ? 2.5 : 1)
+                                    Circle().stroke(isSelected ? Color.cyan : Color.white.opacity(0.15), lineWidth: isSelected ? 2.5 : 1)
                                 )
                                 .scaleEffect(isSelected ? 1.15 : 1.0)
                                 
@@ -385,7 +399,7 @@ struct RankingSheetView: View {
     
     private var personalReviewSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Personal Review & Thoughts")
+            Text("Cosmic Log & Thoughts")
                 .font(.headline)
                 .foregroundColor(.white)
             
@@ -395,7 +409,7 @@ struct RankingSheetView: View {
                     .opacity(0.5)
                 
                 if movie.notes.isEmpty {
-                    Text("Write down your thoughts, favorite scenes, or hot takes...")
+                    Text("Record your stellar review or favorite moments...")
                         .font(.body)
                         .foregroundColor(.white.opacity(0.3))
                         .padding(.horizontal, 16)
@@ -429,7 +443,7 @@ struct RankingSheetView: View {
             Divider().background(Color.white.opacity(0.1))
             
             Toggle("Would Rewatch", isOn: $movie.wouldRewatch)
-                .toggleStyle(SwitchToggleStyle(tint: movie.mediaGlowColor))
+                .toggleStyle(SwitchToggleStyle(tint: .cyan))
                 .padding()
                 .foregroundColor(.white)
         }
@@ -454,13 +468,44 @@ struct RankingSheetView: View {
     }
 }
 
-// MARK: - Helper untuk Identifiable Image Zoom
+// MARK: - Twinkling Starry Background Generator
+struct StarryBackgroundView: View {
+    @State private var animateStars = false
+    
+    var body: some View {
+        ZStack {
+            ForEach(0..<25, id: \.self) { i in
+                Circle()
+                    .fill(i % 2 == 0 ? Color.white : Color.cyan)
+                    .frame(width: CGFloat(i % 3 + 2), height: CGFloat(i % 3 + 2))
+                    .position(
+                        x: CGFloat((i * 37) % Int(UIScreen.main.bounds.width)),
+                        y: CGFloat((i * 59) % Int(UIScreen.main.bounds.height))
+                    )
+                    .opacity(animateStars ? Double.random(in: 0.2...0.9) : Double.random(in: 0.1...0.4))
+                    .animation(
+                        Animation.easeInOut(duration: Double.random(in: 1.5...4.0))
+                            .repeatForever(autoreverses: true)
+                            .delay(Double.random(in: 0...2)),
+                        value: animateStars
+                    )
+            }
+        }
+        .onAppear {
+            animateStars = true
+        }
+        .allowsHitTesting(false)
+        .ignoresSafeArea()
+    }
+}
+
+// MARK: - Identifiable Image Zoom Helper
 struct IdentifiableImage: Identifiable {
     let id = UUID()
     let image: UIImage
 }
 
-// MARK: - Tampilan Layar Penuh (Zoom View)
+// MARK: - Full Screen Zoom View
 struct ZoomedPhotoView: View {
     let image: UIImage
     @Environment(\.dismiss) var dismiss
@@ -497,7 +542,7 @@ struct ZoomedPhotoView: View {
     }
 }
 
-// MARK: - Template Share IG Story (Ukuran Proporsional & Foto 1:1)
+// MARK: - IG Story Share Template
 struct MovieReviewShareCard: View {
     let movie: MarvelMovie
     @Environment(\.dismiss) var dismiss
@@ -506,7 +551,7 @@ struct MovieReviewShareCard: View {
     var body: some View {
         ZStack {
             LinearGradient(
-                gradient: Gradient(colors: [Color(hex: "2D0B0E"), Color(hex: "0A0102")]),
+                gradient: Gradient(colors: [Color(hex: "0B0B16"), Color(hex: "020205")]),
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -515,7 +560,7 @@ struct MovieReviewShareCard: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 20) {
                     HStack {
-                        Text("SHARE REVIEW CARD")
+                        Text("SHARE COSMIC CARD")
                             .font(.headline.bold())
                             .foregroundColor(.white)
                         Spacer()
@@ -540,7 +585,7 @@ struct MovieReviewShareCard: View {
                                     RoundedRectangle(cornerRadius: 24)
                                         .stroke(
                                             LinearGradient(
-                                                colors: [movie.mediaGlowColor, Color.white.opacity(0.1)],
+                                                colors: [Color.cyan, Color.purple.opacity(0.3)],
                                                 startPoint: .topLeading,
                                                 endPoint: .bottomTrailing
                                             ),
@@ -577,9 +622,9 @@ struct MovieReviewShareCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("SACRED LINE REVIEW")
+                    Text("GALAXY REVIEW")
                         .font(.system(size: 8, weight: .black))
-                        .foregroundColor(movie.mediaGlowColor)
+                        .foregroundColor(.cyan)
                         .tracking(2)
                     
                     if movie.tier != .unranked {
@@ -597,7 +642,7 @@ struct MovieReviewShareCard: View {
                         .frame(width: 40, height: 40)
                         .background(movie.tier.color)
                         .clipShape(Circle())
-                        .overlay(Circle().stroke(Color.white, lineWidth: 1.5))
+                        .overlay(Circle().stroke(Color.cyan, lineWidth: 1.5))
                 }
             }
             
@@ -611,7 +656,6 @@ struct MovieReviewShareCard: View {
                     .foregroundColor(.white.opacity(0.5))
             }
             
-            // FOTO DIKUNCI 1:1 KOTAK PAS (Ukuran proporsional di IG Story, lebar dikunci 256 agar tidak terlalu raksasa)
             if let data = movie.userPhotoData, let uiImage = UIImage(data: data) {
                 Image(uiImage: uiImage)
                     .resizable()
@@ -620,21 +664,22 @@ struct MovieReviewShareCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            .stroke(Color.cyan.opacity(0.3), lineWidth: 1)
                     )
                     .onTapGesture {
                         zoomedImageForShare = uiImage
                     }
+                    .frame(maxWidth: .infinity, alignment: .center)
             }
             
             Divider().background(Color.white.opacity(0.2))
             
             VStack(alignment: .leading, spacing: 6) {
-                Text("MY HOT TAKE / OPINION:")
+                Text("MY COSMIC THOUGHTS:")
                     .font(.system(size: 8, weight: .bold))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(.cyan.opacity(0.7))
                 
-                Text(movie.notes.isEmpty ? "No personal notes logged yet." : "\"" + movie.notes + "\"")
+                Text(movie.notes.isEmpty ? "No cosmic notes logged yet." : "\"" + movie.notes + "\"")
                     .font(.subheadline)
                     .italic()
                     .foregroundColor(.white.opacity(0.9))
@@ -642,17 +687,17 @@ struct MovieReviewShareCard: View {
             }
             .padding(12)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.black.opacity(0.4))
+            .background(Color.black.opacity(0.5))
             .cornerRadius(12)
             
             HStack {
-                Text("#SacredLine #MCUReview")
+                Text("#SacredLine #GalaxyMCU")
                     .font(.system(size: 8.5, weight: .semibold))
                     .foregroundColor(.white.opacity(0.4))
                 Spacer()
                 Text(movie.wouldRewatch ? "🔄 Would Rewatch" : "")
                     .font(.caption2.bold())
-                    .foregroundColor(.green)
+                    .foregroundColor(.cyan)
             }
         }
     }
@@ -667,8 +712,8 @@ struct MovieReviewShareCard: View {
         
         let pasteboardItems: [String: Any] = [
             "com.instagram.sharedSticker.stickerImage": imageData,
-            "com.instagram.sharedSticker.backgroundTopColor": "#1F0608",
-            "com.instagram.sharedSticker.backgroundBottomColor": "#0A0102",
+            "com.instagram.sharedSticker.backgroundTopColor": "#0B0B16",
+            "com.instagram.sharedSticker.backgroundBottomColor": "#020205",
             "com.instagram.sharedSticker.contentURL": destinationURL.absoluteString
         ]
         
@@ -689,18 +734,17 @@ struct MovieReviewShareCard: View {
         }
     }
     
-    // Lebar card IG dikecilkan jadi 304 agar ukurannya pas dan ideal (tidak terlalu besar di IG Story)
     private var cardToShare: some View {
         cardContentBody
             .padding(20)
             .frame(width: 304)
-            .background(Color(hex: "1F0608"))
+            .background(Color(hex: "0B0B16"))
             .cornerRadius(22)
             .overlay(
                 RoundedRectangle(cornerRadius: 22)
                     .stroke(
                         LinearGradient(
-                            colors: [movie.mediaGlowColor, Color.white.opacity(0.2)],
+                            colors: [Color.cyan, Color.purple.opacity(0.4)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
