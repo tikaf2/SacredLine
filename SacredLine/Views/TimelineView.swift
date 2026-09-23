@@ -170,7 +170,7 @@ struct TimelineView: View {
         VStack(spacing: 10) {
             // Search Bar
             HStack(spacing: 10) {
-                Image(systemName: "sparkles")
+                Image(systemName: "sparkle.magnifyingglass")
                     .foregroundColor(Color(hex: "FF4D6D"))
                     .font(.system(size: 13, weight: .bold))
                 
